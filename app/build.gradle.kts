@@ -62,4 +62,9 @@ dependencies {
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
+
+    implementation("androidx.compose.ui:ui:1.7.6")
+    implementation("androidx.compose.foundation:foundation:1.7.6")
+//    implementation("androidx.compose.material:material:1.7.6")
+    implementation("androidx.compose.material3:material3:1.2.0") // ✅ Material 3
 }

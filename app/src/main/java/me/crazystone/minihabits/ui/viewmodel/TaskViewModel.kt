@@ -6,9 +6,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import me.crazystone.minihabits.data.model.Task
-import me.crazystone.minihabits.domain.usecase.TaskUseCases
+import me.crazystone.minihabits.domain.usecase.AddTaskUseCase
+import me.crazystone.minihabits.domain.usecase.DeleteTaskUseCase
+import me.crazystone.minihabits.domain.usecase.GetTasksUseCase
+import me.crazystone.minihabits.domain.usecase.UpdateTaskUseCase
 
-class TaskViewModel(private val taskUseCases: TaskUseCases) : ViewModel() {
+class TaskViewModel(
+    private val getTasksUseCase: GetTasksUseCase,
+    private val addTaskUseCase: AddTaskUseCase,
+    private val updateTaskUseCase: UpdateTaskUseCase,
+    private val deleteTaskUseCase: DeleteTaskUseCase
+) : ViewModel() {
 
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks = _tasks.asStateFlow()
@@ -19,14 +27,14 @@ class TaskViewModel(private val taskUseCases: TaskUseCases) : ViewModel() {
 
     private fun loadTasks() {
         viewModelScope.launch {
-            taskUseCases.getTasks().collect { _tasks.value = it }
+            getTasksUseCase().collect { _tasks.value = it }
         }
     }
 
     fun addTask(title: String, description: String) {
         viewModelScope.launch {
             try {
-                taskUseCases.addTask(Task(title = title, description = description))
+                addTaskUseCase(Task(title = title, description = description))
             } catch (e: IllegalArgumentException) {
                 // 处理错误（例如：通知 UI）
             }
@@ -35,13 +43,13 @@ class TaskViewModel(private val taskUseCases: TaskUseCases) : ViewModel() {
 
     fun updateTask(task: Task) {
         viewModelScope.launch {
-            taskUseCases.updateTask(task)
+            updateTaskUseCase(task)
         }
     }
 
     fun deleteTask(task: Task) {
         viewModelScope.launch {
-            taskUseCases.deleteTask(task)
+            deleteTaskUseCase(task)
         }
     }
 }

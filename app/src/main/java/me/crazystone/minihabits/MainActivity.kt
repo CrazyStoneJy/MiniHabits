@@ -11,37 +11,31 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import me.crazystone.minihabits.data.repository.TaskRepositoryImpl
+import me.crazystone.minihabits.domain.provider.UseCaseProvider
+import me.crazystone.minihabits.ui.TaskScreen
 import me.crazystone.minihabits.ui.theme.MiniHabitsTheme
+import me.crazystone.minihabits.ui.viewmodel.TaskViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
-            MiniHabitsTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+        UseCaseProvider.init(applicationContext)
+        val viewModel = ViewModelProvider(this, object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return TaskViewModel(
+                    UseCaseProvider.getTasksUseCase,
+                    UseCaseProvider.addTaskUseCase,
+                    UseCaseProvider.updateTaskUseCase,
+                    UseCaseProvider.deleteTaskUseCase
+                ) as T
             }
+        })[TaskViewModel::class.java]
+        setContent {
+            TaskScreen(viewModel)
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MiniHabitsTheme {
-        Greeting("Android")
     }
 }
