@@ -44,6 +44,7 @@ class TaskViewModel(
     fun updateTask(task: Task) {
         viewModelScope.launch {
             updateTaskUseCase(task)
+            loadTasks()
         }
     }
 
