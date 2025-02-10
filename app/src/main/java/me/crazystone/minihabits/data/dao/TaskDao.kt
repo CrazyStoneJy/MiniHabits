@@ -15,7 +15,7 @@ interface TaskDao {
     /**
      * 查询所有任务，按创建时间倒序排序
      */
-    @Query("SELECT * FROM tasks ORDER BY createdTime DESC")
+    @Query("SELECT * FROM tasks ORDER BY scheduledTime DESC")
     fun getAllTasks(): Flow<List<Task>>
 
     /**

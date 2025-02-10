@@ -10,6 +10,8 @@ import me.crazystone.minihabits.domain.usecase.AddTaskUseCase
 import me.crazystone.minihabits.domain.usecase.DeleteTaskUseCase
 import me.crazystone.minihabits.domain.usecase.GetTasksUseCase
 import me.crazystone.minihabits.domain.usecase.UpdateTaskUseCase
+import me.crazystone.minihabits.utils.Dates
+import me.crazystone.minihabits.utils.Logs
 
 class TaskViewModel(
     private val getTasksUseCase: GetTasksUseCase,
@@ -25,9 +27,32 @@ class TaskViewModel(
         loadTasks()
     }
 
+    private fun sortTasks(list: List<Task>): List<Task> {
+        Logs.d(list)
+        val incompleteTasks = list.filter { !it.isCompleted }
+        val completedTask = list.filter { it.isCompleted }
+        val todayIncompleteTasks = incompleteTasks.filter {
+            Dates.isToday(it.scheduledTime)
+        }
+        val otherDayIncompleteTasks = incompleteTasks.filter {
+            !Dates.isToday(it.scheduledTime)
+        }
+        return todayIncompleteTasks
+            .sortedByDescending { it.scheduledTime } +
+                otherDayIncompleteTasks.sortedBy {
+                    it.scheduledTime
+                } +
+                completedTask.sortedBy {
+                    it.scheduledTime
+                }
+    }
+
     private fun loadTasks() {
         viewModelScope.launch {
-            getTasksUseCase().collect { _tasks.value = it }
+            getTasksUseCase().collect {
+                // sort
+                _tasks.value = sortTasks((it))
+            }
         }
     }
 
@@ -35,6 +60,16 @@ class TaskViewModel(
         viewModelScope.launch {
             try {
                 addTaskUseCase(Task(title = title, description = description))
+            } catch (e: IllegalArgumentException) {
+                // 处理错误（例如：通知 UI）
+            }
+        }
+    }
+
+    fun addTask(task: Task) {
+        viewModelScope.launch {
+            try {
+                addTaskUseCase(task)
             } catch (e: IllegalArgumentException) {
                 // 处理错误（例如：通知 UI）
             }
