@@ -48,8 +48,8 @@ fun WeekCalendar(defaultDate: Long?, onSelectDay: (dayWeek: DayWeek) -> Unit) {
     var selectedIndex by remember { mutableStateOf(index) }
     var ym by remember { mutableStateOf(dayWeeks[selectedIndex].ym) }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(ym, fontSize = Dimensions.TEXT_MID_SIZE.sp, fontWeight = FontWeight.Bold)
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
+        Text(ym, fontSize = Dimensions.TEXT_MID_SIZE.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
         Spacer(Modifier.padding(4.dp))
         Row {
             dayWeeks.forEachIndexed { index, it ->
@@ -77,7 +77,7 @@ fun WeekCalendar(defaultDate: Long?, onSelectDay: (dayWeek: DayWeek) -> Unit) {
                                 ).dp
                             )  // 设置 Row 的大小为正方形
                             .clip(CircleShape)  // 使 Row 成为圆形
-                            .background(if (index == selectedIndex) ColorTheme.primaryColor400 else ColorTheme.backgroundColor)  // 设置背景颜色
+                            .background(if (index == selectedIndex) ColorTheme.whiteColor else ColorTheme.primaryColor)  // 设置背景颜色
                             .clickable {
                                 selectedIndex = index
                                 ym = it.ym

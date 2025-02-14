@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import me.crazystone.minihabits.data.repository.TaskRepositoryImpl
@@ -18,22 +19,17 @@ import me.crazystone.minihabits.domain.provider.UseCaseProvider
 import me.crazystone.minihabits.ui.TaskScreen
 import me.crazystone.minihabits.ui.theme.MiniHabitsTheme
 import me.crazystone.minihabits.ui.viewmodel.TaskViewModel
+import me.crazystone.minihabits.ui.viewmodel.TaskViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        UseCaseProvider.init(applicationContext)
-        val viewModel = ViewModelProvider(this, object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return TaskViewModel(
-                    UseCaseProvider.getTasksUseCase,
-                    UseCaseProvider.addTaskUseCase,
-                    UseCaseProvider.updateTaskUseCase,
-                    UseCaseProvider.deleteTaskUseCase
-                ) as T
-            }
-        })[TaskViewModel::class.java]
+        val viewModel = ViewModelProvider(
+            this,
+            TaskViewModelFactory(application)
+        ).get(TaskViewModel::class.java)
+
         setContent {
             TaskScreen(viewModel)
         }

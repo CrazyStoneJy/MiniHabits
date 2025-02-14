@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -67,4 +68,7 @@ dependencies {
     implementation("androidx.compose.foundation:foundation:1.7.6")
 //    implementation("androidx.compose.material:material:1.7.6")
     implementation("androidx.compose.material3:material3:1.2.0") // ✅ Material 3
+
+    implementation("androidx.compose.ui:ui-tooling-preview") // 预览依赖
+    debugImplementation("androidx.compose.ui:ui-tooling") // 仅 Debug 版需
 }

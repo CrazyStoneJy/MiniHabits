@@ -17,4 +17,6 @@ object ColorTheme {
     val backgroundColor = Color(0xFFEEEEEE)
     val blackColor = Color(0xFF000000)
     val whiteColor = Color(0xFFFFFFFF)
+    val transparent = Color(0x00FFFFFF)
+    val lightGray = Color.LightGray
 }

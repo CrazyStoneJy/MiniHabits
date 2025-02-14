@@ -1,24 +1,44 @@
 package me.crazystone.minihabits.ui.viewmodel
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.crazystone.minihabits.data.model.Task
+import me.crazystone.minihabits.domain.provider.UseCaseProvider
 import me.crazystone.minihabits.domain.usecase.AddTaskUseCase
 import me.crazystone.minihabits.domain.usecase.DeleteTaskUseCase
 import me.crazystone.minihabits.domain.usecase.GetTasksUseCase
 import me.crazystone.minihabits.domain.usecase.UpdateTaskUseCase
 import me.crazystone.minihabits.utils.Dates
-import me.crazystone.minihabits.utils.Logs
+
+
+class TaskViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(TaskViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return TaskViewModel(application,
+                UseCaseProvider.getTasksUseCase,
+                UseCaseProvider.addTaskUseCase,
+                UseCaseProvider.updateTaskUseCase,
+                UseCaseProvider.deleteTaskUseCase) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
 
 class TaskViewModel(
+    application: Application,
     private val getTasksUseCase: GetTasksUseCase,
     private val addTaskUseCase: AddTaskUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks = _tasks.asStateFlow()
@@ -28,7 +48,6 @@ class TaskViewModel(
     }
 
     private fun sortTasks(list: List<Task>): List<Task> {
-        Logs.d(list)
         val incompleteTasks = list.filter { !it.isCompleted }
         val completedTask = list.filter { it.isCompleted }
         val todayIncompleteTasks = incompleteTasks.filter {
@@ -49,17 +68,23 @@ class TaskViewModel(
 
     private fun loadTasks() {
         viewModelScope.launch {
-            getTasksUseCase().collect {
-                // sort
-                _tasks.value = sortTasks((it))
-            }
+            getTasksUseCase()
+                .map { list ->
+                    list.filter {
+                        !Dates.isBeforeToday(it.scheduledTime)
+                    }
+                }
+                .collect {
+                    // sort
+                    _tasks.value = sortTasks((it))
+                }
         }
     }
 
     fun addTask(title: String, description: String) {
         viewModelScope.launch {
             try {
-                addTaskUseCase(Task(title = title, description = description))
+                addTaskUseCase(Task(title = title, description = description, isRepeat = false, repeatType = 0))
             } catch (e: IllegalArgumentException) {
                 // 处理错误（例如：通知 UI）
             }

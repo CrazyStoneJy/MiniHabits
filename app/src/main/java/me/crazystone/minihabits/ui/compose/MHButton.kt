@@ -14,7 +14,7 @@ import me.crazystone.minihabits.ui.theme.Dimensions
 fun MHButton(title: String, onClick: () -> Unit) {
     Button(onClick = onClick,
         colors = ButtonDefaults.buttonColors(
-        containerColor = ColorTheme.primaryColor400, // 按钮填充颜色
+        containerColor = ColorTheme.primaryColor, // 按钮填充颜色
         contentColor = ColorTheme.blackColor  // 文字颜色
     )) {
         Text(title, fontSize = Dimensions.TEXT_MID_SIZE.sp)

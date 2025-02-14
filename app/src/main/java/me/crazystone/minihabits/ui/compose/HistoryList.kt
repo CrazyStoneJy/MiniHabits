@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
@@ -62,7 +63,8 @@ fun SectionHeader(title: String) {
         Text(
             text = title,
             modifier = Modifier.padding(16.dp),
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium,
+            color = ColorTheme.primaryColor
         )
     }
 }
@@ -75,6 +77,7 @@ fun TaskItem(task: Task) {
     Row(
         modifier = Modifier
             .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
             checked = isChecked,
