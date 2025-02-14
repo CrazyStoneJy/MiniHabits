@@ -17,7 +17,7 @@ import me.crazystone.minihabits.ui.theme.ColorTheme
 @Composable
 fun RepeatSwitch(isRepeat: Boolean, onCheckedChange: ((Boolean) -> Unit)?) {
 
-    Row(modifier = Modifier.padding(2.dp),
+    Row(modifier = Modifier.padding(horizontal = 6.dp),
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
         Text(text = "重复")
         Spacer(modifier = Modifier.padding(horizontal = 4.dp))

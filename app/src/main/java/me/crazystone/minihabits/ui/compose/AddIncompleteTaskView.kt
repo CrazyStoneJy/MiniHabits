@@ -1,31 +1,22 @@
-package me.crazystone.minihabits.ui.page
+package me.crazystone.minihabits.ui.compose
 
-import android.app.Activity
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,94 +26,42 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModelProvider
 import me.crazystone.minihabits.data.model.Task
-import me.crazystone.minihabits.ui.compose.PopoverCalendar
-import me.crazystone.minihabits.ui.compose.RepeatSwitch
 import me.crazystone.minihabits.ui.theme.ColorTheme
 import me.crazystone.minihabits.ui.theme.Dimensions
 import me.crazystone.minihabits.ui.viewmodel.TaskViewModel
-import me.crazystone.minihabits.ui.viewmodel.TaskViewModelFactory
 import me.crazystone.minihabits.utils.Dates
-import me.crazystone.minihabits.utils.Logs
-
-class UpdateTodoActivity : ComponentActivity() {
-    lateinit var viewModel: TaskViewModel
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val task: Task? = intent.getParcelableExtra("task")
-        viewModel = ViewModelProvider(
-            this,
-            TaskViewModelFactory(application)
-        ).get(TaskViewModel::class.java)
-        setContent { UpdateTodoScreen(viewModel, task) }
-    }
-
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun UpdateTodoScreen(viewModel: TaskViewModel, task: Task?) {
-    val context = LocalContext.current
-    Scaffold(
-        modifier = Modifier
-            .background(ColorTheme.backgroundColor),
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Update",
-                        color = ColorTheme.primaryColor,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = Dimensions.TEXT_LARGE_SIZE.sp
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { (context as Activity).finish() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
-                },
-            )
-        },
-
-        content = { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = Dimensions.HORIZONTAL_MARGIN.dp),
-            ) {
-                UpdateView(viewModel, task)
-            }
-        },
-    )
-}
 
 @Composable
-fun UpdateView(viewModel: TaskViewModel, task: Task?) {
-    if (task != null) {
-        val isChecked = task.isCompleted
-        var showCalendar by remember { mutableStateOf(false) }
-        var isRepeat by remember { mutableStateOf(task.isRepeat) }
-        Column {
+fun AddIncompleteTaskView(task: Task, viewModel: TaskViewModel, onClick: () -> Unit) {
+
+    var showCalendar by remember { mutableStateOf(false) }
+    var isRepeat by remember { mutableStateOf(false) }
+    var newTask by remember { mutableStateOf(task) }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1F)
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
-                    checked = isChecked,
+                    checked = false,
                     enabled = false,
                     colors = CheckboxDefaults.colors(
                         checkedColor = ColorTheme.primaryColor400,       // 选中状态时的填充颜色
@@ -159,14 +98,13 @@ fun UpdateView(viewModel: TaskViewModel, task: Task?) {
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(
                             onDone = {
-                                task.title = titleText
-                                viewModel.updateTask(task.copy())
+                                newTask.title = titleText
                                 focusManager.clearFocus()
                                 keyboardController?.hide() // 关闭键盘
                             }
                         ),
                         textStyle = TextStyle(
-                            textDecoration = if (isChecked) TextDecoration.LineThrough else null,
+                            textDecoration = null,
                             fontSize = Dimensions.TEXT_BODY_SIZE.sp
                         ),
                     )
@@ -184,21 +122,26 @@ fun UpdateView(viewModel: TaskViewModel, task: Task?) {
             }
             RepeatSwitch(isRepeat) { isChecked ->
                 isRepeat = isChecked
-                task.isRepeat = isChecked
-                viewModel.updateTask(task.copy())
+                newTask.isRepeat = isChecked
             }
             PopoverCalendar(
                 isShow = showCalendar,
                 task = task,
                 offset = IntOffset(50, 200),
                 onDateClick = { dayWeek ->
-                    task.scheduledTime = dayWeek.date
-                    viewModel.updateTask(task.copy())
+                    newTask.scheduledTime = dayWeek.date
                     showCalendar = false
                 })
             {
                 showCalendar = false
             }
         }
+        Icon(imageVector = Icons.Default.Add, contentDescription = "Add", modifier = Modifier
+            .padding(8.dp)
+            .clickable {
+                viewModel.updateTask(newTask.copy())
+                onClick()
+            })
     }
+
 }

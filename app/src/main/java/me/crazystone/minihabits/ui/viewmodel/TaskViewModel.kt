@@ -22,11 +22,13 @@ class TaskViewModelFactory(private val application: Application) : ViewModelProv
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(TaskViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return TaskViewModel(application,
+            return TaskViewModel(
+                application,
                 UseCaseProvider.getTasksUseCase,
                 UseCaseProvider.addTaskUseCase,
                 UseCaseProvider.updateTaskUseCase,
-                UseCaseProvider.deleteTaskUseCase) as T
+                UseCaseProvider.deleteTaskUseCase
+            ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
@@ -41,10 +43,13 @@ class TaskViewModel(
 ) : AndroidViewModel(application) {
 
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
+    private val _incompleteTasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks = _tasks.asStateFlow()
+    val incompleteTasks = _incompleteTasks.asStateFlow()
 
     init {
         loadTasks()
+        loadIncompleteTasks()
     }
 
     private fun sortTasks(list: List<Task>): List<Task> {
@@ -66,6 +71,16 @@ class TaskViewModel(
                 }
     }
 
+    private fun loadIncompleteTasks() {
+        viewModelScope.launch {
+            getTasksUseCase()
+                .collect {
+                    _incompleteTasks.value =
+                        it.filter { !it.isCompleted && Dates.isAfterToday(it.scheduledTime) }
+                }
+        }
+    }
+
     private fun loadTasks() {
         viewModelScope.launch {
             getTasksUseCase()
@@ -84,7 +99,14 @@ class TaskViewModel(
     fun addTask(title: String, description: String) {
         viewModelScope.launch {
             try {
-                addTaskUseCase(Task(title = title, description = description, isRepeat = false, repeatType = 0))
+                addTaskUseCase(
+                    Task(
+                        title = title,
+                        description = description,
+                        isRepeat = false,
+                        repeatType = 0
+                    )
+                )
             } catch (e: IllegalArgumentException) {
                 // 处理错误（例如：通知 UI）
             }
