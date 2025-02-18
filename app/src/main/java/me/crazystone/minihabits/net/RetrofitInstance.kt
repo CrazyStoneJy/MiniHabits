@@ -1,7 +1,7 @@
 package me.crazystone.minihabits.net
 
 import android.annotation.SuppressLint
-import me.crazystone.minihabits.utils.Env
+import me.crazystone.minihabits.BuildConfig
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
@@ -25,7 +25,7 @@ class AuthInterceptor(private val token: String) : Interceptor {
 
 object RetrofitInstance {
     private const val BASE_URL = "https://api.deepseek.com/"
-    private val API_KEY = Env.get()["API_KEY"]
+    private const val API_KEY = BuildConfig.API_KEY
 
     // 创建 OkHttpClient 并添加 Interceptor
     @SuppressLint("NewApi")

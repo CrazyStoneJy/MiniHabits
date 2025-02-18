@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +7,16 @@ plugins {
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
 }
+
+// 读取 local.properties
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
+// 获取配置变量
+val apiKey = localProperties.getProperty("API_KEY") ?: ""
 
 android {
     namespace = "me.crazystone.minihabits"
@@ -18,6 +30,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "API_KEY", "\"$apiKey\"")
     }
 
     buildTypes {
@@ -38,6 +51,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -82,6 +96,4 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.11.0") // Gson 解析
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") // 协程支持
 //    implementation(libs.retrofit2.kotlinx.coroutines.adapter)
-    // .env
-    implementation("io.github.cdimascio:dotenv-kotlin:6.5.0")
 }
