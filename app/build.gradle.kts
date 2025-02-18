@@ -71,4 +71,17 @@ dependencies {
 
     implementation("androidx.compose.ui:ui-tooling-preview") // 预览依赖
     debugImplementation("androidx.compose.ui:ui-tooling") // 仅 Debug 版需
+
+    // lottie
+    implementation("com.airbnb.android:lottie:6.6.2")
+    implementation("com.airbnb.android:lottie-compose:6.6.2")
+    // gson
+    implementation("com.google.code.gson:gson:2.10.1")
+    // retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0") // Gson 解析
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") // 协程支持
+//    implementation(libs.retrofit2.kotlinx.coroutines.adapter)
+    // .env
+    implementation("io.github.cdimascio:dotenv-kotlin:6.5.0")
 }

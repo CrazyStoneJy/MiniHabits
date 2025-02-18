@@ -14,10 +14,10 @@ class UpdateTaskUseCaseTest {
 
     @Test
     fun updateTaskSuccessfully() = runBlocking {
-        val task = Task(id = 1, title = "Old Task")
+        val task = Task(id = 1, title = "Old Task", repeatType = 0, isRepeat = false)
         repository.addTask(task)
 
-        val updatedTask = task.copy(title = "Updated Task")
+        val updatedTask = task.copy(title = "Updated Task", repeatType = 0, isRepeat = false)
         updateTaskUseCase(updatedTask)
 
         val tasks = repository.getTasks().first()

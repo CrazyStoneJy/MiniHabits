@@ -1,6 +1,7 @@
 package me.crazystone.minihabits.ui
 
 
+import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -21,8 +22,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Face
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -55,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.crazystone.minihabits.R
 import me.crazystone.minihabits.data.model.Task
+import me.crazystone.minihabits.ui.compose.AIAssistantModal
 import me.crazystone.minihabits.ui.compose.AddIncompleteTaskView
 import me.crazystone.minihabits.ui.compose.CustomModalDialog
 import me.crazystone.minihabits.ui.page.HistoryTodoActivity
@@ -76,11 +76,14 @@ fun TaskScreen(viewModel: TaskViewModel) {
     var isCommonShow by remember { mutableStateOf(false) }
     var showSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
-    var isFirstShowSheet by remember { mutableStateOf(false) }
+//    var isFirstShowSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(incompleteTasks) {
-        if (incompleteTasks.isNotEmpty() && !isFirstShowSheet) {
-            isFirstShowSheet = true
+        val sp = context.getSharedPreferences("todo_prefs", MODE_PRIVATE)
+        val date = sp.getLong("date", 0)
+        if (incompleteTasks.isNotEmpty() && Dates.isBeforeToday(date)) {
+//            isFirstShowSheet = true
+            sp.edit().putLong("date", System.currentTimeMillis()).apply()
             showSheet = true
         }
     }
@@ -99,6 +102,7 @@ fun TaskScreen(viewModel: TaskViewModel) {
                     )
                 },
                 actions = {
+                    // TODO
                     IconButton(onClick = {
                         val intent = Intent(context, HistoryTodoActivity::class.java)
                         context.startActivity(intent)
@@ -108,12 +112,12 @@ fun TaskScreen(viewModel: TaskViewModel) {
                             contentDescription = "Localized description"
                         )
                     }
-                    IconButton(onClick = { /* do something */ }) {
-                        Icon(
-                            imageVector = Icons.Filled.Settings,
-                            contentDescription = "Localized description"
-                        )
-                    }
+//                    IconButton(onClick = { /* do something */ }) {
+//                        Icon(
+//                            imageVector = Icons.Filled.Settings,
+//                            contentDescription = "Localized description"
+//                        )
+//                    }
                 },
             )
         },
@@ -130,8 +134,20 @@ fun TaskScreen(viewModel: TaskViewModel) {
                 }) {
                     isCommonShow = false
                 }
-
-                if (showSheet) {
+                AIAssistantModal(
+                    isAIShow, viewModel,
+                    onConfirm = { tasks ->
+                        isAIShow = false
+                        tasks.forEach { task ->
+                            viewModel.addTask(task)
+                        }
+                        viewModel.clearChatResponse()
+                    }
+                ) {
+                    isAIShow = false
+                    viewModel.clearChatResponse()
+                }
+                if (showSheet && incompleteTasks.isNotEmpty()) {
                     ModalBottomSheet(
                         onDismissRequest = { showSheet = false }, // 点击外部关闭
                         sheetState = sheetState
@@ -141,7 +157,9 @@ fun TaskScreen(viewModel: TaskViewModel) {
 //                                Text("Item $index", modifier = Modifier.padding(8.dp))
                                 AddIncompleteTaskView(task, viewModel) {
                                     Logs.d("click Add AddIncompleteTaskView")
-                                    showSheet = false
+//                                    showSheet = false
+//                                    incompleteTasks.toMutableStateList().removeAt(index)
+                                    viewModel.loadIncompleteTasks()
                                 }
                             }
                         }
@@ -151,7 +169,7 @@ fun TaskScreen(viewModel: TaskViewModel) {
         },
         floatingActionButton = {
             FloatingButton({
-
+                isAIShow = true
             }) {
                 isCommonShow = true
             }

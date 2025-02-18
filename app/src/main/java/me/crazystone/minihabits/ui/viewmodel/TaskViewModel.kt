@@ -14,8 +14,15 @@ import me.crazystone.minihabits.domain.provider.UseCaseProvider
 import me.crazystone.minihabits.domain.usecase.AddTaskUseCase
 import me.crazystone.minihabits.domain.usecase.DeleteTaskUseCase
 import me.crazystone.minihabits.domain.usecase.GetTasksUseCase
+import me.crazystone.minihabits.domain.usecase.RequestChat
 import me.crazystone.minihabits.domain.usecase.UpdateTaskUseCase
+import me.crazystone.minihabits.net.ChatBody
+import me.crazystone.minihabits.net.ChatCompletionResponse
+import me.crazystone.minihabits.net.Message
+import me.crazystone.minihabits.net.NetResultState
+import me.crazystone.minihabits.net.ResponseFormat
 import me.crazystone.minihabits.utils.Dates
+import me.crazystone.minihabits.utils.Logs
 
 
 class TaskViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
@@ -27,7 +34,8 @@ class TaskViewModelFactory(private val application: Application) : ViewModelProv
                 UseCaseProvider.getTasksUseCase,
                 UseCaseProvider.addTaskUseCase,
                 UseCaseProvider.updateTaskUseCase,
-                UseCaseProvider.deleteTaskUseCase
+                UseCaseProvider.deleteTaskUseCase,
+                UseCaseProvider.requestChatUseCase
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
@@ -39,7 +47,8 @@ class TaskViewModel(
     private val getTasksUseCase: GetTasksUseCase,
     private val addTaskUseCase: AddTaskUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
-    private val deleteTaskUseCase: DeleteTaskUseCase
+    private val deleteTaskUseCase: DeleteTaskUseCase,
+    private val chatRequest: RequestChat
 ) : AndroidViewModel(application) {
 
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
@@ -47,9 +56,65 @@ class TaskViewModel(
     val tasks = _tasks.asStateFlow()
     val incompleteTasks = _incompleteTasks.asStateFlow()
 
+    private val _chatResponse = MutableStateFlow<NetResultState<ChatCompletionResponse>?>(null)
+    val chatResponse = _chatResponse.asStateFlow()
+
     init {
         loadTasks()
         loadIncompleteTasks()
+    }
+
+
+    private fun createChatRequest(content: String): ChatBody {
+        val systemPrompt = """
+            The user will provide some exam text. Please split tasks according to the tomato work method and output them in JSON format. 
+
+            EXAMPLE INPUT: 
+            I want to finish todo app ui design.
+            
+            EXAMPLE JSON OUTPUT:
+            [
+                "plan ui design",
+                "write compose code by ui design",
+            ]
+        """
+        val messages = listOf(
+            Message(content = systemPrompt, role = "system"),
+            Message(content = content, role = "user")
+        )
+
+        val responseFormat = ResponseFormat(type = "text")
+
+        return ChatBody(
+            messages = messages,
+            model = "deepseek-chat",
+            frequencyPenalty = 0,
+            maxTokens = 2048,
+            presencePenalty = 0,
+            responseFormat = responseFormat,
+            stop = null,
+            stream = false,
+            streamOptions = null,
+            temperature = 1,
+            topP = 1,
+            tools = null,
+            toolChoice = "none",
+            logprobs = false,
+            topLogprobs = null
+        )
+    }
+
+    fun getChatCompletion(content: String) {
+        viewModelScope.launch {
+            chatRequest(createChatRequest(content)).collect {
+                Logs.d("getChatCompletion: $it")
+                _chatResponse.value = it
+            }
+        }
+    }
+
+    fun clearChatResponse() {
+        _chatResponse.value = null
     }
 
     private fun sortTasks(list: List<Task>): List<Task> {
@@ -71,12 +136,16 @@ class TaskViewModel(
                 }
     }
 
-    private fun loadIncompleteTasks() {
+    fun loadIncompleteTasks() {
         viewModelScope.launch {
             getTasksUseCase()
                 .collect {
                     _incompleteTasks.value =
-                        it.filter { !it.isCompleted && Dates.isAfterToday(it.scheduledTime) }
+                        it.filter { tasks ->
+                            Dates.isBeforeToday(
+                                tasks.scheduledTime
+                            ) && (tasks.isRepeat || !tasks.isCompleted)
+                        }
                 }
         }
     }

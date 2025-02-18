@@ -14,7 +14,7 @@ class DeleteTaskUseCaseTest {
 
     @Test
     fun deleteTaskSuccessfully() = runBlocking {
-        val task = Task(id = 1, title = "Task to delete")
+        val task = Task(id = 1, title = "Task to delete", repeatType = 0, isRepeat = false)
         repository.addTask(task)
 
         deleteTaskUseCase(task)

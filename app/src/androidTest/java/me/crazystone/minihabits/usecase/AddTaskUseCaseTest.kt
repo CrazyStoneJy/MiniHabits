@@ -15,7 +15,7 @@ class AddTaskUseCaseTest {
 
     @Test
     fun addTaskSuccessfully() = runBlocking {
-        val task = Task(title = "Test Task", description = "Task description")
+        val task = Task(title = "Test Task", description = "Task description", repeatType = 0, isRepeat = false)
         addTaskUseCase(task)
 
         val tasks = repository.getTasks().first()
@@ -25,7 +25,7 @@ class AddTaskUseCaseTest {
 
     @Test
     fun addTaskWithEmptyTitleThrowsException() {
-        val task = Task(title = "", description = "Invalid task")
+        val task = Task(title = "", description = "Invalid task", repeatType = 0, isRepeat = false)
 
         assertThrows(IllegalArgumentException::class.java) {
             runBlocking { addTaskUseCase(task) }

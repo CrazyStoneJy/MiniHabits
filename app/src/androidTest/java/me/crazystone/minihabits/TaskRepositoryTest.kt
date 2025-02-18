@@ -38,7 +38,7 @@ class TaskRepositoryTest {
 
     @Test
     fun addTaskTest() = runBlocking {
-        val task = Task(title = "Repo Test", description = "Testing repository add")
+        val task = Task(title = "Repo Test", description = "Testing repository add", repeatType = 0, isRepeat = false)
         repository.addTask(task)
 
         val tasks = repository.getTasks().first()
@@ -48,7 +48,7 @@ class TaskRepositoryTest {
 
     @Test
     fun updateTaskTest() = runBlocking {
-        val task = Task(title = "Repo Test", description = "Testing repository update")
+        val task = Task(title = "Repo Test", description = "Testing repository update", repeatType = 0, isRepeat = false)
         repository.addTask(task)
 
         var tasks = repository.getTasks().first()
@@ -63,7 +63,7 @@ class TaskRepositoryTest {
 
     @Test
     fun deleteTaskTest() = runBlocking {
-        val task = Task(title = "Repo Test", description = "Testing repository delete")
+        val task = Task(title = "Repo Test", description = "Testing repository delete", repeatType = 0, isRepeat = false)
         repository.addTask(task)
 
         var tasks = repository.getTasks().first()

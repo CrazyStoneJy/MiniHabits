@@ -1,10 +1,10 @@
 package me.crazystone.minihabits.ui.compose
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -37,12 +36,12 @@ import me.crazystone.minihabits.data.model.Task
 import me.crazystone.minihabits.ui.theme.ColorTheme
 import me.crazystone.minihabits.ui.theme.Dimensions
 import me.crazystone.minihabits.ui.viewmodel.TaskViewModel
-import me.crazystone.minihabits.utils.Dates
 
+@SuppressLint("NewApi")
 @Composable
 fun AddIncompleteTaskView(task: Task, viewModel: TaskViewModel, onClick: () -> Unit) {
 
-    var showCalendar by remember { mutableStateOf(false) }
+//    var showCalendar by remember { mutableStateOf(false) }
     var isRepeat by remember { mutableStateOf(false) }
     var newTask by remember { mutableStateOf(task) }
 
@@ -110,35 +109,26 @@ fun AddIncompleteTaskView(task: Task, viewModel: TaskViewModel, onClick: () -> U
                     )
                 }
             }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            ) {
-                Text("日期:")
-                Spacer(modifier = Modifier.padding(horizontal = 6.dp))
-                Text(Dates.getDate(task.scheduledTime), modifier = Modifier.clickable {
-                    showCalendar = true
-                })
-            }
             RepeatSwitch(isRepeat) { isChecked ->
                 isRepeat = isChecked
                 newTask.isRepeat = isChecked
             }
-            PopoverCalendar(
-                isShow = showCalendar,
-                task = task,
-                offset = IntOffset(50, 200),
-                onDateClick = { dayWeek ->
-                    newTask.scheduledTime = dayWeek.date
-                    showCalendar = false
-                })
-            {
-                showCalendar = false
-            }
+//            PopoverCalendar(
+//                isShow = showCalendar,
+//                task = task,
+//                offset = IntOffset(50, 200),
+//                onDateClick = { dayWeek ->
+//                    newTask.scheduledTime = dayWeek.date
+//                    showCalendar = false
+//                })
+//            {
+//                showCalendar = false
+//            }
         }
         Icon(imageVector = Icons.Default.Add, contentDescription = "Add", modifier = Modifier
             .padding(8.dp)
             .clickable {
+                newTask.scheduledTime = System.currentTimeMillis()
                 viewModel.updateTask(newTask.copy())
                 onClick()
             })

@@ -38,7 +38,7 @@ class TaskDaoTest {
 
     @Test
     fun insertTaskAndGetAllTasks() = runBlocking {
-        val task = Task(title = "Test Task", description = "This is a test task")
+        val task = Task(title = "Test Task", description = "This is a test task", repeatType = 0, isRepeat = false)
         taskDao.insertTask(task)
 
         val tasks = taskDao.getAllTasks().first()
@@ -51,7 +51,7 @@ class TaskDaoTest {
 
     @Test
     fun updateTask() = runBlocking {
-        val task = Task(title = "Test Task", description = "Update test")
+        val task = Task(title = "Test Task", description = "Update test", repeatType = 0, isRepeat = false)
         taskDao.insertTask(task)
 
         var tasks = taskDao.getAllTasks().first()
@@ -66,7 +66,7 @@ class TaskDaoTest {
 
     @Test
     fun deleteTask() = runBlocking {
-        val task = Task(title = "Test Task", description = "Delete test")
+        val task = Task(title = "Test Task", description = "Delete test", repeatType = 0, isRepeat = false)
         taskDao.insertTask(task)
 
         var tasks = taskDao.getAllTasks().first()

@@ -14,8 +14,8 @@ class GetTasksUseCaseTest {
 
     @Test
     fun getTasksReturnsCorrectList() = runBlocking {
-        val task1 = Task(title = "Task 1")
-        val task2 = Task(title = "Task 2")
+        val task1 = Task(title = "Task 1", repeatType = 0, isRepeat = false)
+        val task2 = Task(title = "Task 2", repeatType = 0, isRepeat = false)
         repository.addTask(task1)
         repository.addTask(task2)
 
